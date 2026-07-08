@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Pilih Template Canva & Upload Foto</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0b0b16;
+            color: #f0f0f8;
+        }
+        .glass {
+            background: rgba(26, 26, 46, 0.7);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+        }
+        .template-card {
+            transition: all 0.25s ease;
+            border: 2px solid transparent;
+            cursor: pointer;
+            background: rgba(255, 255, 255, 0.03);
+        }
+        .template-card:hover {
+            transform: translateY(-6px);
+            border-color: rgba(139, 92, 246, 0.5);
+            box-shadow: 0 16px 40px -12px rgba(139, 92, 246, 0.25);
+            background: rgba(139, 92, 246, 0.08);
+        }
+        .template-card.active {
+            border-color: #8b5cf6;
+            background: rgba(139, 92, 246, 0.15);
+            box-shadow: 0 0 0 1px #8b5cf6, 0 8px 30px -8px rgba(139, 92, 246, 0.3);
+        }
+        .upload-zone {
+            border: 2px dashed rgba(255, 255, 255, 0.15);
+            transition: all 0.3s ease;
+        }
+        .upload-zone:hover,
+        .upload-zone.dragover {
+            border-color: #8b5cf6;
+            background: rgba(139, 92, 246, 0.05);
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #7c3aed, #6d28d9);
+            transition: all 0.2s ease;
+        }
+        .btn-primary:hover {
+            transform: scale(1.02);
+            box-shadow: 0 8px 30px -6px #7c3aed;
+        }
+        .btn-outline {
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            transition: all 0.2s ease;
+        }
+        .btn-outline:hover {
+            background: rgba(255, 255, 255, 0.05);
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+        .template-link {
+            color: #a78bfa;
+            word-break: break-all;
+            font-size: 0.75rem;
+        }
+        .template-link:hover {
+            color: #c4b5fd;
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="max-w-5xl mx-auto px-4 py-8 md:py-12">
+
+        <!-- ===== HEADER ===== -->
+        <header class="text-center mb-10">
+            <h1 class="text-4xl md:text-5xl font-extrabold tracking-tight bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
+                Canva Template Picker
+            </h1>
+            <p class="text-gray-400 mt-2 text-lg">Upload foto, pilih template, dan edit langsung di Canva</p>
+        </header>
+
+        <!-- ===== MAIN CARD ===== -->
+        <div class="glass rounded-3xl p-6 md:p-8 shadow-2xl">
+
+            <!-- 1. UPLOAD ZONE -->
+            <div class="mb-8">
+                <label class="block text-sm font-semibold text-gray-300 mb-3">
+                    <i class="fas fa-cloud-upload-alt mr-2 text-indigo-400"></i> Upload Foto Anda
+                </label>
+                <div id="dropZone" class="upload-zone rounded-2xl p-8 text-center cursor-pointer">
+                    <input type="file" id="fileInput" class="hidden" accept="image/*" />
+                    <div id="uploadLabel">
+                        <i class="fas fa-image text-5xl text-gray-600 mb-4"></i>
+                        <p class="text-gray-400">Klik atau drag &amp; drop foto di sini</p>
+                        <p class="text-xs text-gray-500 mt-2">JPG, PNG, WEBP (Maks 5MB)</p>
+                    </div>
+                    <div id="previewContainer" class="hidden mt-4">
+                        <img id="previewImage" class="max-h-56 mx-auto rounded-xl shadow-lg" alt="Preview Foto" />
+                        <p id="fileName" class="text-sm text-gray-400 mt-3 truncate"></p>
+                        <button id="removeFileBtn" class="mt-2 text-xs text-red-400 hover:text-red-300 transition">
+                            <i class="fas fa-times-circle"></i> Hapus foto
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2. TEMPLATE GRID -->
+            <div class="mb-8">
+                <div class="flex items-center justify-between mb-4">
+                    <label class="text-sm font-semibold text-gray-300">
+                        <i class="fas fa-palette mr-2 text-indigo-400"></i> Pilih Template Canva
+                    </label>
+                    <span class="text-xs text-gray-500" id="selectedTemplateLabel">Belum dipilih</span>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4" id="templateGrid">
+                    <!-- Template cards akan di-generate oleh JavaScript -->
+                </div>
+            </div>
+
+            <!-- 3. ACTION BUTTONS -->
+            <div class="flex flex-col sm:flex-row gap-4">
+                <button id="openCanvaBtn" class="btn-primary flex-1 text-white font-bold py-4 rounded-2xl text-lg flex items-center justify-center gap-3 transition disabled:opacity-50 disabled:cursor-not-allowed">
+                    <i class="fab fa-canva"></i> Buka & Edit di Canva
+                </button>
+                <button id="resetBtn" class="btn-outline px-6 py-4 rounded-2xl text-gray-300 hover:text-white transition flex items-center justify-center gap-2">
+                    <i class="fas fa-undo-alt"></i> Reset
+                </button>
+            </div>
+
+            <!-- ===== INFO / ERROR ===== -->
+            <div id="infoMessage" class="mt-6 p-4 rounded-xl bg-gray-800/50 border border-gray-700 hidden">
+                <p id="infoText" class="text-sm text-gray-300"></p>
+            </div>
+
+            <!-- ===== TEMPLATE LINK DISPLAY ===== -->
+            <div id="linkDisplay" class="mt-6 p-4 rounded-xl bg-gray-900/60 border border-gray-800 hidden">
+                <p class="text-xs text-gray-400 uppercase tracking-wider mb-1">Link Template Pilihan:</p>
+                <a id="templateLink" href="#" target="_blank" rel="noopener noreferrer" class="template-link text-sm"></a>
+                <button id="copyLinkBtn" class="ml-3 text-xs text-gray-400 hover:text-white transition">
+                    <i class="fas fa-copy"></i> Salin link
+                </button>
+            </div>
+
+        </div><!-- end main card -->
+
+        <footer class="text-center text-gray-600 text-xs mt-8">
+            <i class="fas fa-external-link-alt mr-1"></i> Klik tombol untuk membuka template di Canva. Pastikan Anda login ke Canva.
+        </footer>
+    </div>
+
+    <script>
+        (function() {
+            // ---------- DATA TEMPLATE ----------
+            const templates = [{
+                id: '1',
+                name: 'Elegan & Mewah',
+                emoji: '✨',
+                link: 'https://canva.link/jpc8b6oho8gkwvo',
+                description: 'Desain berkelas dengan sentuhan premium'
+            }, {
+                id: '2',
+                name: 'Bold & Berani',
+                emoji: '🔥',
+                link: 'https://canva.link/o71b28l4t8dokqk',
+                description: 'Tampilan kuat dan penuh percaya diri'
+            }, {
+                id: '3',
+                name: 'Natural & Santai',
+                emoji: '🌿',
+                link: 'https://canva.link/r11lgl8z7gg74i7',
+                description: 'Nuansa organik dan menenangkan'
+            }, {
+                id: '4',
+                name: 'Inspiratif',
+                emoji: '💫',
+                link: 'https://canva.link/m946nvfu7edvls5',
+                description: 'Membangkitkan semangat dan mimpi'
+            }, {
+                id: '5',
+                name: 'Cinematic',
+                emoji: '🎬',
+                link: 'https://canva.link/e9avtyhu7l94tpc',
+                description: 'Gaya sinematik dan dramatis'
+            }];
+
+            // ---------- DOM REFS ----------
+            const dropZone = document.getElementById('dropZone');
+            const fileInput = document.getElementById('fileInput');
+            const uploadLabel = document.getElementById('uploadLabel');
+            const previewContainer = document.getElementById('previewContainer');
+            const previewImage = document.getElementById('previewImage');
+            const fileName = document.getElementById('fileName');
+            const removeFileBtn = document.getElementById('removeFileBtn');
+            const templateGrid = document.getElementById('templateGrid');
+            const selectedTemplateLabel = document.getElementById('selectedTemplateLabel');
+            const openCanvaBtn = document.getElementById('openCanvaBtn');
+            const resetBtn = document.getElementById('resetBtn');
+            const infoMessage = document.getElementById('infoMessage');
+            const infoText = document.getElementById('infoText');
+            const linkDisplay = document.getElementById('linkDisplay');
+            const templateLink = document.getElementById('templateLink');
+            const copyLinkBtn = document.getElementById('copyLinkBtn');
+
+            // ---------- STATE ----------
+            let selectedFile = null;
+            let selectedTemplateId = null;
+            let selectedTemplateLink = '';
+
+            // ---------- RENDER TEMPLATE CARDS ----------
+            function renderTemplates() {
+                templateGrid.innerHTML = '';
+                templates.forEach(tpl => {
+                    const card = document.createElement('div');
+                    card.className = 'template-card rounded-2xl p-4 text-center';
+                    card.dataset.id = tpl.id;
+                    card.innerHTML = `
+                        <div class="text-3xl mb-2">${tpl.emoji}</div>
+                        <div class="font-semibold text-sm">${tpl.name}</div>
+                        <div class="text-xs text-gray-400 mt-1">${tpl.description}</div>
+                        <div class="mt-3 text-[10px] text-gray-500 truncate">${tpl.link.replace('https://', '')}</div>
+                    `;
+                    card.addEventListener('click', () => selectTemplate(tpl.id));
+                    templateGrid.appendChild(card);
+                });
+            }
+
+            // ---------- SELECT TEMPLATE ----------
+            function selectTemplate(id) {
+                const tpl = templates.find(t => t.id === id);
+                if (!tpl) return;
+
+                // Update UI cards
+                document.querySelectorAll('.template-card').forEach(card => {
+                    card.classList.toggle('active', card.dataset.id === id);
+                });
+
+                selectedTemplateId = id;
+                selectedTemplateLink = tpl.link;
+                selectedTemplateLabel.textContent = `${tpl.emoji} ${tpl.name}`;
+
+                // Update link display
+                templateLink.href = tpl.link;
+                templateLink.textContent = tpl.link;
+                linkDisplay.classList.remove('hidden');
+
+                // Sembunyikan info
+                infoMessage.classList.add('hidden');
+
+                // Update tombol
+                updateButtons();
+            }
+
+            // ---------- UPDATE BUTTONS ----------
+            function updateButtons() {
+                const hasFile = selectedFile !== null;
+                const hasTemplate = selectedTemplateId !== null;
+                openCanvaBtn.disabled = !(hasFile && hasTemplate);
+
+                if (hasFile && hasTemplate) {
+                    openCanvaBtn.innerHTML = `<i class="fab fa-canva"></i> Buka & Edit di Canva`;
+                } else if (!hasFile) {
+                    openCanvaBtn.innerHTML = `<i class="fas fa-image"></i> Upload foto dulu`;
+                } else if (!hasTemplate) {
+                    openCanvaBtn.innerHTML = `<i class="fas fa-palette"></i> Pilih template`;
+                }
+            }
+
+            // ---------- HANDLE FILE UPLOAD ----------
+            function handleFile(file) {
+                if (!file || !file.type.startsWith('image/')) {
+                    showInfo('Mohon upload file gambar (JPG, PNG, WEBP).', 'warning');
+                    return;
+                }
+
+                if (file.size > 5 * 1024 * 1024) {
+                    showInfo('Ukuran file terlalu besar. Maksimal 5MB.', 'warning');
+                    return;
+                }
+
+                selectedFile = file;
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    previewImage.src = e.target.result;
+                    previewContainer.classList.remove('hidden');
+                    uploadLabel.classList.add('hidden');
+                    fileName.textContent = file.name;
+                    showInfo(`Foto "${file.name}" berhasil diupload!`, 'success');
+                    updateButtons();
+                };
+                reader.readAsDataURL(file);
+            }
+
+            // ---------- REMOVE FILE ----------
+            function removeFile() {
+                selectedFile = null;
+                previewContainer.classList.add('hidden');
+                uploadLabel.classList.remove('hidden');
+                previewImage.src = '';
+                fileName.textContent = '';
+                fileInput.value = '';
+                updateButtons();
+                showInfo('Foto dihapus. Upload foto baru.', 'info');
+            }
+
+            // ---------- SHOW INFO ----------
+            function showInfo(message, type = 'info') {
+                infoText.textContent = message;
+                infoMessage.classList.remove('hidden');
+                // Reset class
+                infoMessage.className = 'mt-6 p-4 rounded-xl border ';
+                if (type === 'success') {
+                    infoMessage.classList.add('bg-emerald-900/20', 'border-emerald-800/40', 'text-emerald-300');
+                } else if (type === 'warning') {
+                    infoMessage.classList.add('bg-yellow-900/20', 'border-yellow-800/40', 'text-yellow-300');
+                } else {
+                    infoMessage.classList.add('bg-gray-800/50', 'border-gray-700', 'text-gray-300');
+                }
+                // Auto hide after 5s
+                clearTimeout(window.infoTimeout);
+                window.infoTimeout = setTimeout(() => {
+                    infoMessage.classList.add('hidden');
+                }, 5000);
+            }
+
+            // ---------- OPEN CANVA ----------
+            function openCanva() {
+                if (!selectedFile || !selectedTemplateLink) return;
+
+                // Simpan foto ke localStorage untuk sementara (opsional)
+                try {
+                    localStorage.setItem('canva_uploaded_image', previewImage.src);
+                } catch (e) { /* ignore */ }
+
+                // Buka link template di tab baru
+                window.open(selectedTemplateLink, '_blank');
+
+                showInfo('Template dibuka di Canva! Silakan edit dengan foto Anda.', 'success');
+            }
+
+            // ---------- COPY LINK ----------
+            function copyLink() {
+                if (!selectedTemplateLink) return;
+                navigator.clipboard.writeText(selectedTemplateLink).then(() => {
+                    const orig = copyLinkBtn.innerHTML;
+                    copyLinkBtn.innerHTML = '<i class="fas fa-check"></i> Tersalin!';
+                    setTimeout(() => copyLinkBtn.innerHTML = orig, 2000);
+                }).catch(() => {
+                    alert('Gagal menyalin link. Silakan salin manual.');
+                });
+            }
+
+            // ---------- RESET ALL ----------
+            function resetAll() {
+                removeFile();
+                document.querySelectorAll('.template-card').forEach(c => c.classList.remove('active'));
+                selectedTemplateId = null;
+                selectedTemplateLink = '';
+                selectedTemplateLabel.textContent = 'Belum dipilih';
+                linkDisplay.classList.add('hidden');
+                openCanvaBtn.disabled = true;
+                openCanvaBtn.innerHTML = `<i class="fas fa-upload"></i> Upload & Pilih`;
+                showInfo('Semua reset. Mulai dari awal.', 'info');
+            }
+
+            // ---------- EVENT LISTENERS ----------
+            // Upload via click
+            dropZone.addEventListener('click', () => fileInput.click());
+            fileInput.addEventListener('change', (e) => {
+                if (e.target.files.length) handleFile(e.target.files[0]);
+            });
+
+            // Drag & drop
+            dropZone.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                dropZone.classList.add('dragover');
+            });
+            dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+            dropZone.addEventListener('drop', (e) => {
+                e.preventDefault();
+                dropZone.classList.remove('dragover');
+                if (e.dataTransfer.files.length) handleFile(e.dataTransfer.files[0]);
+            });
+
+            // Remove file
+            removeFileBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                removeFile();
+            });
+
+            // Open Canva
+            openCanvaBtn.addEventListener('click', openCanva);
+
+            // Copy link
+            copyLinkBtn.addEventListener('click', copyLink);
+
+            // Reset
+            resetBtn.addEventListener('click', resetAll);
+
+            // ---------- INIT ----------
+            renderTemplates();
+            updateButtons();
+            showInfo('Upload foto dan pilih template Canva favorit Anda.', 'info');
+
+        })();
+    </script>
+
+</body>
+</html>
